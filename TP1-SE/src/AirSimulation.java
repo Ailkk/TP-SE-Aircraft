@@ -7,6 +7,7 @@
  */
 
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 
 public class AirSimulation
@@ -141,8 +142,7 @@ public class AirSimulation
 				{
 					//compteur
 					numTentative++;
-					System.out.println("Agent 3 tantative N°" + numTentative);
-
+					//System.out.println("Agent 3 tantative Nï¿½" + numTentative);
 
 					//clone customer
 					tmp=(Customer) this.a.getCustomer(row1,col1).clone();
@@ -153,6 +153,7 @@ public class AirSimulation
 					//exchange the customer
 					this.a.add(tmp2, row1, col1);
 					this.a.add(tmp, row2, col2);
+
 
 					exchange = true;
 				}
@@ -210,7 +211,7 @@ public class AirSimulation
 	// Simulation in sequential (main)
 	public static void main(String[] args) throws InterruptedException
 	{
-
+		Semaphore sem = new Semaphore(4);
 		long chono = System.currentTimeMillis();
 		System.out.println("\n** Sequential execution **\n");
 		if (args != null && args.length > 0 && args[0] != null && args[0].equals("animation"))
@@ -218,15 +219,33 @@ public class AirSimulation
 			AirSimulation s = new AirSimulation();
 			while (!s.a.isFlightFull())
 			{
-
-
-
-				//Liste des Thread
-
+				Thread troisAgent = new Thread() {
+					public void run() {
+						try {
+							sem.acquire();
+							synchronized (s) {
+								s.agent2();
+								s.agent3();
+								s.agent4();
+							}
+							sem.release();
+						}
+						catch(Exception e) {
+							System.out.println("An error as occured");
+						}
+					}
+				};
+				
+				
 				Thread agent1T = new Thread() {
 					public void run() {
 						try {
-							s.agent1();
+							sem.acquire();
+							synchronized (s) {
+								s.agent1();	
+							}
+							troisAgent.start();
+							sem.release();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -234,45 +253,6 @@ public class AirSimulation
 
 				};
 				agent1T.start();
-
-				Thread agent2T = new Thread() {
-					public void run() {
-						try {
-							s.agent2();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-				agent2T.start();
-
-				Thread agent3T = new Thread() {
-					public void run() {
-						try {
-							s.agent3();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-				agent3T.start();
-
-				Thread agent4T = new Thread() {
-					public void run() {
-						try {
-							s.agent4();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-
-
-
-				agent4T.start();
 
 				System.out.println(s + s.a.cleanString());
 				//Thread.sleep(100);
@@ -284,10 +264,35 @@ public class AirSimulation
 			AirSimulation s = new AirSimulation();
 			while (!s.a.isFlightFull())
 			{
+				
+				
+				Thread troisAgent = new Thread() {
+					public void run() {
+						try {
+							sem.acquire();
+							synchronized (s) {
+								s.agent2();
+								s.agent3();
+								s.agent4();
+							}
+							sem.release();
+						}
+						catch(Exception e) {
+							System.out.println("An error has occured");
+						}
+					}
+				};
+				
+				
 				Thread agent1T2 = new Thread() {
 					public void run() {
 						try {
-							s.agent1();
+							sem.acquire();
+							synchronized (s) {
+								s.agent1();	
+							}
+							troisAgent.start();
+							sem.release();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -295,46 +300,12 @@ public class AirSimulation
 
 				};
 				agent1T2.start();
-				Thread agent2T2 = new Thread() {
-					public void run() {
-						try {
-							s.agent2();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-				agent2T2.start();
-				Thread agent3T2 = new Thread() {
-					public void run() {
-						try {
-							s.agent3();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-				agent3T2.start();
-				Thread agent4T2 = new Thread() {
-					public void run() {
-						try {
-							s.agent4();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-				};
-
-
-
-				agent4T2.start();
 			}
-			System.out.println(s);
+			synchronized (s) {
+				System.out.println(s);	
+			}
 		}
-		System.out.println(chono);
+		System.out.println(System.currentTimeMillis() - chono+"ms");
 	}
 }
 
