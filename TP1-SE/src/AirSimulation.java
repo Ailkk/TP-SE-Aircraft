@@ -207,6 +207,14 @@ public class AirSimulation
 
 
 
+	
+	
+	
+	// temps sans threads : ~33ms
+
+	// temps avec 2 threads (agent1 & agent2,3,4) avec sémpahores : ~40ms
+
+	//temps avec 2 threads (agent1 & agent2,3,4) sans sémpahores : ~40ms
 
 	// Simulation in sequential (main)
 	public static void main(String[] args) throws InterruptedException
@@ -264,8 +272,6 @@ public class AirSimulation
 			AirSimulation s = new AirSimulation();
 			while (!s.a.isFlightFull())
 			{
-				
-				
 				Thread troisAgent = new Thread() {
 					public void run() {
 						try {
@@ -278,13 +284,13 @@ public class AirSimulation
 							sem.release();
 						}
 						catch(Exception e) {
-							System.out.println("An error has occured");
+							System.out.println("An error as occured");
 						}
 					}
 				};
 				
 				
-				Thread agent1T2 = new Thread() {
+				Thread agent1T = new Thread() {
 					public void run() {
 						try {
 							sem.acquire();
@@ -299,7 +305,7 @@ public class AirSimulation
 					}
 
 				};
-				agent1T2.start();
+				agent1T.start();
 			}
 			synchronized (s) {
 				System.out.println(s);	
@@ -308,4 +314,3 @@ public class AirSimulation
 		System.out.println(System.currentTimeMillis() - chono+"ms");
 	}
 }
-
